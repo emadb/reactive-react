@@ -7,7 +7,7 @@ var socket = io.connect('http://localhost:3000/');
 var patch = require('socketio-wildcard')(io.Manager);
 patch(socket);
 
-function createProducer(){
+function createWsProducer(){
   return {
     start: function (listener) {
       socket.on('*', function(evt){
@@ -21,6 +21,20 @@ function createProducer(){
   }
 }
 
+function createDispatcherProducer(){
+  return {
+    start: function (listener) {
+      dispatcher.register(action => {
+        listener.next(action)
+      })
+    },
+    stop: function () {
+
+    },
+    id: 2
+  }
+}
+
 const Wrapper = (Container, reducers = [], initialState = {}) => class WrapperClass extends React.Component {
   constructor(props) {
     super(props)
@@ -30,14 +44,14 @@ const Wrapper = (Container, reducers = [], initialState = {}) => class WrapperCl
     }
   }
   componentWillMount() {
-    const stream = xs.create(createProducer())
+    const stream1 = xs.create(createWsProducer())
+    const stream2 = xs.create(createDispatcherProducer())
+    const stream = xs.merge(stream1, stream2)
     stream.addListener({
       next: this.applyNewState,
       error: (err) => { console.log('err', err)},
       complete: () => {},
     })
-
-    this.subscriptionToken = dispatcher.register(this.applyNewState)
   }
   applyNewState(action){
     const newState = reducers.reduce((acc, r) => {

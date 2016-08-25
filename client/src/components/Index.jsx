@@ -13,7 +13,7 @@ var Index = React.createClass({
     };
   },
   componentWillMount: function() {
-    actions.connect()
+  
   },
   start(){
     actions.start()
