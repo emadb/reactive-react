@@ -35,10 +35,17 @@ function createDispatcherProducer(){
   }
 }
 
+function combineReducers(reducers, state, action){
+  const newState = reducers.reduce((acc, r) => {
+    const projection = r.project(state)
+    return Object.assign(state, r(projection, action))  
+  }, state)
+  return newState
+}
+
 const Wrapper = (Container, reducers = [], initialState = {}) => class WrapperClass extends React.Component {
   constructor(props) {
     super(props)
-    this.applyNewState = this.applyNewState.bind(this)
     this.state = {
       childState: initialState
     }
@@ -47,18 +54,14 @@ const Wrapper = (Container, reducers = [], initialState = {}) => class WrapperCl
     const stream1 = xs.create(createWsProducer())
     const stream2 = xs.create(createDispatcherProducer())
     const stream = xs.merge(stream1, stream2)
-    stream.addListener({
-      next: this.applyNewState,
-      error: (err) => { console.log('err', err)},
-      complete: () => {},
-    })
-  }
-  applyNewState(action){
-    const newState = reducers.reduce((acc, r) => {
-      const projection = r.project(this.state.childState)
-      return Object.assign(this.state.childState, r(projection, action))  
-    }, this.state.childState)
-    this.setState({childState: newState})
+
+    stream
+      .map(s => combineReducers(reducers, this.state.childState, s))
+      .addListener({
+        next: s => this.setState({childState: s}),
+        error: (err) => { console.log('err', err)},
+        complete: () => {},
+      })
   }
   componentWillUnmount() {
     //TODO: stop the stream

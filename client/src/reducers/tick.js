@@ -11,8 +11,7 @@ export default buildReducer({
     if (state.running){
       return { ticks: action.data.timer }  
     }
-    return {ticks: state.ticks}
-    
+    return {ticks: state.ticks} 
   },
   'tack': (state, action) => { 
     if (state.running){
