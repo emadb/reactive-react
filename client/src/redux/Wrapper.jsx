@@ -21,20 +21,6 @@ function createWebsocketStream(){
   }
 }
 
-// function createActionStream(){
-//   return {
-//     start: function (listener) {
-//       dispatcher.register(action => {
-//         listener.next(action)
-//       })
-//     },
-//     stop: function () {
-
-//     },
-//     id: 2
-//   }
-// }
-
 function combineReducers(reducers, state, action){
   const newState = reducers.reduce((acc, r) => {
     const projection = r.project(state)
@@ -51,9 +37,9 @@ const Wrapper = (Container, reducers = [], initialState = {}) => class WrapperCl
     }
   }
   componentWillMount() {
-    const stream1 = xs.create(createWebsocketStream())
-    const stream2 = dispatcher.getStream() //xs.create(createActionStream())
-    const stream = xs.merge(stream1, stream2)
+    const ws = xs.create(createWebsocketStream())
+    const actions = dispatcher.getStream() 
+    const stream = xs.merge(ws, actions)
 
     stream
       .map(s => combineReducers(reducers, this.state.childState, s))
@@ -65,7 +51,6 @@ const Wrapper = (Container, reducers = [], initialState = {}) => class WrapperCl
   }
   componentWillUnmount() {
     //TODO: stop the stream
-    //TODO: dispatcher.unregister(this.subscriptionToken)
   }
   render() {
     return <Container {...this.state.childState} {...this.props} dispatcher={dispatcher} />
