@@ -6,7 +6,7 @@
     "node": "*"
   },
   "scripts": {
-    "dev": "webpack-dev-server --hot --devtool eval-source-map --inline --progress --colors --content-base dist/",
+    "dev": "webpack-dev-server --hot --devtool eval-source-map --inline --progress --colors --content-base dist/"
   },
   "author": "Emanuele DelBono",
   "license": "MIT",

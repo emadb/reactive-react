@@ -7,7 +7,7 @@ var socket = io.connect('http://localhost:3000/');
 var patch = require('socketio-wildcard')(io.Manager);
 patch(socket);
 
-function createWsProducer(){
+function createWebsocketStream(){
   return {
     start: function (listener) {
       socket.on('*', function(evt){
@@ -21,19 +21,19 @@ function createWsProducer(){
   }
 }
 
-function createDispatcherProducer(){
-  return {
-    start: function (listener) {
-      dispatcher.register(action => {
-        listener.next(action)
-      })
-    },
-    stop: function () {
+// function createActionStream(){
+//   return {
+//     start: function (listener) {
+//       dispatcher.register(action => {
+//         listener.next(action)
+//       })
+//     },
+//     stop: function () {
 
-    },
-    id: 2
-  }
-}
+//     },
+//     id: 2
+//   }
+// }
 
 function combineReducers(reducers, state, action){
   const newState = reducers.reduce((acc, r) => {
@@ -51,8 +51,8 @@ const Wrapper = (Container, reducers = [], initialState = {}) => class WrapperCl
     }
   }
   componentWillMount() {
-    const stream1 = xs.create(createWsProducer())
-    const stream2 = xs.create(createDispatcherProducer())
+    const stream1 = xs.create(createWebsocketStream())
+    const stream2 = dispatcher.getStream() //xs.create(createActionStream())
     const stream = xs.merge(stream1, stream2)
 
     stream
