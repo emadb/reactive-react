@@ -7,6 +7,8 @@ var socket = io.connect('http://localhost:3000/');
 var patch = require('socketio-wildcard')(io.Manager);
 patch(socket);
 
+const history = []
+
 function createWebsocketStream(){
   return {
     start: function (listener) {
@@ -43,6 +45,11 @@ const Wrapper = (Container, reducers = [], initialState = {}) => class WrapperCl
 
     stream
       .map(s => combineReducers(reducers, this.state.childState, s))
+      // store states.
+      .map(s => {
+        history.push(this.state.childState)
+        return s
+      })
       .addListener({
         next: s => this.setState({childState: s}),
         error: (err) => { console.log('err', err)},

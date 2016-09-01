@@ -1,16 +1,27 @@
-var subscribers = {}
-var prefix = 'SUB'
-var lastSubscriber = 1
-
 var xs = require('xstream').default
-var stream = xs.never()
+
+function createDispatcherStream(){
+  return {
+    id: 2,
+    listener: {},
+    start: function (listener) {
+      this.listener = listener
+    },
+    next(action){
+      this.listener.next(action)
+    },
+    stop: function () {}
+  }
+}
+
+const ds = createDispatcherStream();
 
 const dispatcher = {
   dispatch: action => {
-    stream.shamefullySendNext(action)
+    ds.next(action)
   },
   getStream(){
-    return stream
+    return xs.create(ds)
   }
 }
 
